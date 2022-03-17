@@ -12,8 +12,8 @@ Receive and give coordinates in JSON format:
 }
 
 Features:
-  multithreading
-  user registeration/authenticator
-  salting and hashing of passwords
-  edition and deletion of coordinate possible
+  multithreading,
+  user registeration/authenticator,
+  salting and hashing of passwords,
+  edition and deletion of coordinate possible,
   query of coordinates with parameters
