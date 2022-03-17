@@ -13,14 +13,15 @@ import java.util.stream.Collectors;
 import org.json.JSONObject;
 
 public class RegistrationHandler implements HttpHandler {
-    private CoordinateDatabase db_handler;
+    private final RegisterDatabase db_handler;
 
-    public RegistrationHandler (CoordinateDatabase db_handler){
+    public RegistrationHandler (RegisterDatabase db_handler){
         this.db_handler = db_handler;
     }
 
     @Override
     public void handle(HttpExchange t) throws IOException {
+        System.out.println("Registration request handled in thread " + Thread.currentThread().getId()); 
         Headers headers = t.getRequestHeaders();
         String response = "";
         int code; //error code

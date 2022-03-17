@@ -8,6 +8,8 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
+import java.util.Scanner;
+import java.util.concurrent.Executors;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.InetSocketAddress;
@@ -38,22 +40,25 @@ public class Server {
         try {
             System.out.println("Starting up the server...");
             System.out.println("");
+            String db_path = ""; //for gitlab
+            String register_db_name = "RegisterDB.db";
+            String coordinate_db_name = "CoordinateDB.db";
 
-            //database parameters
-            String db_path = args[2];
-            String db_name = args[3];
-
-            CoordinateDatabase db_handler = CoordinateDatabase.getInstance(db_path, db_name);
-            UserAuthenticator authchecker = new UserAuthenticator("coordinates", db_handler);
+            CoordinateDatabase coord_db_handler = CoordinateDatabase.getInstance(db_path, coordinate_db_name);
+            RegisterDatabase reg_db_handler = RegisterDatabase.getInstance(db_path, register_db_name);
+            UserAuthenticator authchecker = new UserAuthenticator("coordinates", reg_db_handler);
 
             //create the http server to port 8001 with default logger
             HttpsServer server = HttpsServer.create(new InetSocketAddress(8001), 0);
 
-            //create context
-            HttpContext context = server.createContext("/coordinates", new CoordinatesHandler(db_handler));
+            //create contexts
+            HttpContext context = server.createContext("/coordinates", new CoordinatesHandler(coord_db_handler));
             context.setAuthenticator(authchecker);
 
-            HttpContext regContext = server.createContext("/registration", new RegistrationHandler(db_handler));
+            HttpContext commentContext = server.createContext("/comment", new CommentHandler(coord_db_handler));
+            commentContext.setAuthenticator(authchecker);
+
+            HttpContext regContext = server.createContext("/registration", new RegistrationHandler(reg_db_handler));
 
             SSLContext sslContext = coordinateServerSSLContext(args[0], args[1]);
 
@@ -67,8 +72,22 @@ public class Server {
             });
 
             // creates a default executor
-            server.setExecutor(null);
+            server.setExecutor(Executors.newCachedThreadPool());
             server.start();
+
+            //handles closing down the server
+            boolean server_on = true;
+            Scanner scanner = new Scanner(System.in);
+            while (server_on == true){
+                String quit = scanner.nextLine();
+                if (quit.equals("/quit")) {
+                    server_on = false;
+                }
+            }
+            coord_db_handler.closeDB();
+            reg_db_handler.closeDB();
+            System.out.println("Closing the server");
+            server.stop(3);
 
         } catch (FileNotFoundException e) {
             // Certificate file not found!

@@ -3,9 +3,9 @@ package com.server;
 import com.sun.net.httpserver.BasicAuthenticator;
 
 class UserAuthenticator extends BasicAuthenticator {
-    private CoordinateDatabase db_handler;
+    private RegisterDatabase db_handler;
 
-    public UserAuthenticator (String realm, CoordinateDatabase db_handler){
+    public UserAuthenticator (String realm, RegisterDatabase db_handler){
         super(realm);
         this.db_handler = db_handler;
     }
